@@ -4,6 +4,7 @@ import signal
 import time
 import copy
 import traceback
+from tenderfoot import Tenderfoot
 
 TIME = 16
 MAX_PTS = 68
@@ -349,6 +350,7 @@ if __name__ == '__main__':
 		print '<option> can be 1 => Random player vs. Random player'
 		print '                2 => Human vs. Random Player'
 		print '                3 => Human vs. Human'
+		print '                4 => Random vs. Tenderfoot'
 		sys.exit(1)
  
 	obj1 = ''
@@ -364,6 +366,9 @@ if __name__ == '__main__':
 	elif option == '3':
 		obj1 = Manual_Player()
 		obj2 = Manual_Player()
+	elif option == '4':
+		obj1 = Random_Player()
+		obj2 = Tenderfoot()
 	else:
 		print 'Invalid option'
 		sys.exit(1)
