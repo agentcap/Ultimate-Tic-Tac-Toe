@@ -6,6 +6,28 @@ class Tenderfoot():
 		self.INF 	= 1000000
 		self.depth 	= 3
 		self.ply 	= {}
+		self.block_weights = [[6, 4, 4, 6], [4, 3, 3, 4], [4, 3, 3, 4], [6, 4, 4, 6]]
+		self.winning_comb = []
+		for i in range(4):
+			comb = []
+			for j in range(4):
+				comb.append((i, j))
+			self.winning_comb.append(comb)
+
+		for j in range(4):
+			comb = []
+			for i in range(4):
+				comb.append((i, j))
+			self.winning_comb.append(comb)
+
+		comb = [(1, 2), (2, 1), (2, 3), (3, 2)]
+		self.winning_comb.append(comb)
+		comb = [(1, 1), (2, 0), (2, 2), (3, 1)]
+		self.winning_comb.append(comb)
+		comb = [(0, 2), (1, 1), (1, 3), (2, 2)]
+		self.winning_comb.append(comb)
+		comb = [(0, 1), (1, 0), (1, 2), (2, 1)]
+		self.winning_comb.append(comb)
 
 	def move(self, board, old_move, flag):
 	
@@ -24,7 +46,7 @@ class Tenderfoot():
 	def minimax(self, board, depth, alpha, beta, old_move, is_max_ply):
 
 		if depth == 0 or board.find_terminal_state() != ('CONTINUE', '-'):
-			return self.heuristic(board)
+			return (self.heuristic(board, self.ply["max"]) - self.heuristic(board, self.ply["min"]), old_move)
 
 		moves = board.find_valid_move_cells(old_move)
 
@@ -68,5 +90,43 @@ class Tenderfoot():
 				
 			return (min_score, min_move)
 
-	def heuristic(self, board):
-		return (1,(-1,-1))
+	def heuristic(self, board, flag):
+		# return (1,(-1,-1))
+		board_prob = [[0 for i in range(4)] for j in range(4)]
+		for i in range(4):
+			for j in range(4):
+				if board.block_status[i][j] == '-': 
+					board_prob[i][j] = self.find_prob_cells(board.board_status, 4*i, 4*j, flag)
+				elif board.block_status[i][j] == flag:
+					board_prob[i][j] = 1
+
+		return self.find_prob_block(board_prob)
+
+	def find_prob_cells(self, board_status, topx, topy, flag):
+
+		total_prob = 0
+		for comb in self.winning_comb:
+			prob = 1
+			for (x, y) in comb:
+				if board_status[topx + x][topy + y] == '-':
+					prob *= 0.5
+				elif board_status[topx + x][topy + y] != flag:
+					prob *= 0
+			if prob == 1:
+				return 1
+			total_prob += prob
+
+		return total_prob
+
+	def find_prob_block(self, board_prob):
+
+		total_prob = 0
+		for comb in self.winning_comb:
+			prob = 1
+			for (x, y) in comb:
+				prob *= board_prob[x][y]
+			if prob == 1:
+				return 1
+			total_prob += prob
+
+		return total_prob / 12
