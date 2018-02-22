@@ -45,7 +45,13 @@ class Tenderfoot():
 
 	def minimax(self, board, depth, alpha, beta, old_move, is_max_ply):
 
-		if depth == 0 or board.find_terminal_state() != ('CONTINUE', '-'):
+		terminal_status = board.find_terminal_state()
+		if depth == 0 or terminal_status != ('CONTINUE', '-'):
+			if terminal_status[1] == 'WON':
+				if terminal_status[0] == self.ply["max"]:
+					return (10, old_move)
+				else:
+					return (-10, old_move)
 			return (self.heuristic(board, self.ply["max"]) - self.heuristic(board, self.ply["min"]), old_move)
 
 		moves = board.find_valid_move_cells(old_move)
