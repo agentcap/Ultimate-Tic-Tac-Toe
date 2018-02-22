@@ -52,7 +52,17 @@ class Tenderfoot():
 					return (10, old_move)
 				else:
 					return (-10, old_move)
-			return (self.heuristic(board, self.ply["max"]) - self.heuristic(board, self.ply["min"]), old_move)
+			boardmax = self.heuristic(board, self.ply["max"])
+			boardmin = self.heuristic(board, self.ply["min"])
+			for i in range(4):
+				for j in range(4):
+					if boardmax[i][j] == 1:
+						boardmin[i][j] = 0
+					if boardmin[i][j] == 1:
+						boardmax[i][j] = 0
+
+			return (self.find_prob_block(boardmax) - self.find_prob_block(boardmin), old_move)
+
 
 		moves = board.find_valid_move_cells(old_move)
 
@@ -106,7 +116,8 @@ class Tenderfoot():
 				elif board.block_status[i][j] == flag:
 					board_prob[i][j] = 1
 
-		return self.find_prob_block(board_prob)
+		# return self.find_prob_block(board_prob)
+		return board_prob
 
 	def find_prob_cells(self, board_status, topx, topy, flag):
 
@@ -122,7 +133,7 @@ class Tenderfoot():
 				return 1
 			total_prob += prob
 
-		return total_prob
+		return total_prob / 12
 
 	def find_prob_block(self, board_prob):
 
