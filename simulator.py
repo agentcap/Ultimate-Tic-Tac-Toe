@@ -5,6 +5,7 @@ import time
 import copy
 import traceback
 from tenderfoot import Tenderfoot
+from d3 import Player24
 
 TIME = 16
 MAX_PTS = 68
@@ -368,6 +369,9 @@ if __name__ == '__main__':
 		obj2 = Manual_Player()
 	elif option == '4':
 		obj1 = Random_Player()
+		obj2 = Tenderfoot()
+	elif option == '5':
+		obj1 = Player24()
 		obj2 = Tenderfoot()
 	else:
 		print 'Invalid option'
