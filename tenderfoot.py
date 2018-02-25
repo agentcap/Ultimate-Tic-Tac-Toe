@@ -7,6 +7,8 @@ class Tenderfoot():
 		self.depth 	= 3
 		self.ply 	= {}
 		self.block_weights = [[6, 4, 4, 6], [4, 3, 3, 4], [4, 3, 3, 4], [6, 4, 4, 6]]
+		self.pc = 0
+		self.oc = 0
 		self.winning_comb = []
 		for i in range(4):
 			comb = []
@@ -38,6 +40,10 @@ class Tenderfoot():
 			self.ply["max"] = "o"
 			self.ply["min"] = "x"
 
+		for row in board.block_status:
+			self.pc += row.count(self.ply["max"])
+			self.oc += row.count(self.ply["min"])
+
 		score,move = self.minimax(board, self.depth, -self.INF, self.INF, old_move, True)
 
 		return move
@@ -61,7 +67,21 @@ class Tenderfoot():
 					if boardmin[i][j] == 1:
 						boardmax[i][j] = 0
 
-			return (self.find_prob_block(boardmax) - self.find_prob_block(boardmin), old_move)
+			cnt1 = 0
+			cnt2 = 0
+			for row in board.block_status:
+				cnt1 += row.count(self.ply["max"])
+				cnt2 += row.count(self.ply["min"])
+			gain = self.find_prob_block(boardmax) - self.find_prob_block(boardmin)
+
+			if self.pc < cnt1 and self.oc == cnt2:
+				gain += 0.05
+			elif self.pc < cnt1 and cnt1 - self.pc < cnt2 - self.oc:
+				gain -= 0.02
+			elif cnt1 < self.pc and cnt2 > self.oc:
+				gain -= 0.05
+
+			return (gain, old_move)
 
 
 		moves = board.find_valid_move_cells(old_move)
