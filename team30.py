@@ -161,12 +161,12 @@ class Team30():
 
 		cnt1 = sum(blocks.count(self.ply["max"]) for blocks in board.block_status)
 		cnt2 = sum(blocks.count(self.ply["min"]) for blocks in board.block_status)
-		if self.cntp < cnt1 and cnt2 == self.cnto:
+		if cnt2 == self.cnto and self.cntp < cnt1:
 			prob += 50
-		elif cnt1 > self.cntp and (cnt1 - self.cntp) < (cnt2 - self.cnto):
-			prob -= 20
 		elif cnt1 < self.cntp and cnt2 > self.cnto:
 			prob -= 50
+		elif cnt1 > self.cntp and (cnt1 - self.cntp) < (cnt2 - self.cnto):
+			prob -= 20
 
 		return prob
 
