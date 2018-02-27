@@ -1,4 +1,5 @@
 import random
+import time
 
 class Tenderfoot():
 
@@ -8,6 +9,7 @@ class Tenderfoot():
 		self.ply 	= {}
 		self.block_weights = [[6, 4, 4, 6], [4, 3, 3, 4], [4, 3, 3, 4], [6, 4, 4, 6]]
 		self.winning_comb = []
+		self.tlimit = 14
 		for i in range(4):
 			comb = []
 			for j in range(4):
@@ -41,18 +43,31 @@ class Tenderfoot():
 			self.ply["max"] = "o"
 			self.ply["min"] = "x"
 
-		self.cntp = sum(blocks.count(self.ply["max"]) for blocks in board.block_status)
-		self.cnto = sum(blocks.count(self.ply["min"]) for blocks in board.block_status)
+		self.cntp  = sum(blocks.count(self.ply["max"]) for blocks in board.block_status)
+		self.cnto  = sum(blocks.count(self.ply["min"]) for blocks in board.block_status)
+		self.stime = time.time()
+		self.depth = 3
 
-		score,move = self.minimax(board, self.depth, -self.INF, self.INF, old_move, True)
-		return move
+		max_move = (-1, -1)
+
+		while time.time() - self.stime < self.tlimit:
+			score,move,valid = self.minimax(board, self.depth, -self.INF, self.INF, old_move, True)
+			print('valid --> ', valid, 'depth --> ',self.depth, 'time--> ',time.time() - self.stime)
+			if valid == 1:
+				max_move = move
+			self.depth += 1
+
+		if max_move == (-1, -1):
+			return random.choice(board.find_valid_move_cells())
+
+		return max_move
 
 
 	def minimax(self, board, depth, alpha, beta, old_move, is_max_ply):
 
 		terminal_status = board.find_terminal_state()
 		if depth == 0 or terminal_status != ('CONTINUE', '-'):
-			return (self.heuristic(board, self.ply["max"]), old_move)
+			return (self.heuristic(board, self.ply["max"]), old_move, 1)
 
 		moves = board.find_valid_move_cells(old_move)
 
@@ -61,12 +76,26 @@ class Tenderfoot():
 			max_move  = (-1,-1)
 			for mv in moves:
 
+				if time.time() - self.stime > self.tlimit:
+					return (-1, (-1, -1), 0)
+
 				board.update(old_move, mv, self.ply["max"])
 				
-				score = self.minimax(board, depth-1, alpha, beta, mv, False)[0]
+				flag = False
+				if board.block_status[mv[0]/4][mv[1]/4] == self.ply["max"]:
+					won = sum(blocks.count(self.ply["max"]) for blocks in board.block_status)
+					if won <= 2:
+						flag = True
+
+				tupl = self.minimax(board, depth-1, alpha, beta, mv, flag)
 
 				board.block_status[mv[0]/4][mv[1]/4]= '-'
 				board.board_status[mv[0]][mv[1]] 	= '-'
+
+				if tupl[2] == 0:
+					return (-1, (-1, -1), 0)
+
+				score = tupl[0]
 
 				alpha = max(alpha,score)
 				if(max_score < score):
@@ -75,19 +104,33 @@ class Tenderfoot():
 				if(alpha > beta):
 					break
 				
-			return (max_score, max_move)
+			return (max_score, max_move, 1)
 
 		else:
 			min_score = self.INF
 			min_move = (-1,-1)
 			for mv in moves:
 
+				if time.time() - self.stime > self.tlimit:
+					return (-1, (-1, -1), 0)
+
 				board.update(old_move, mv, self.ply["min"])
-				
-				score = self.minimax(board,depth-1,alpha,beta,mv,True)[0]
+
+				flag = True
+				if board.block_status[mv[0]/4][mv[1]/4] == self.ply["min"]:
+					won = sum(blocks.count(self.ply["min"]) for blocks in board.block_status)
+					if won <= 2:
+						flag = False
+
+				tupl = self.minimax(board,depth-1,alpha,beta,mv,flag)
 
 				board.block_status[mv[0]/4][mv[1]/4]= '-'
 				board.board_status[mv[0]][mv[1]] 	= '-'
+
+				if tupl[2] == 0:
+					return (-1, (-1, -1), 0)
+
+				score = tupl[0]
 
 				beta = min(beta,score)
 				if(min_score > score):
@@ -96,7 +139,7 @@ class Tenderfoot():
 				if(alpha > beta):
 					break
 				
-			return (min_score, min_move)
+			return (min_score, min_move, 1)
 
 	def heuristic(self, board, flag):
 
