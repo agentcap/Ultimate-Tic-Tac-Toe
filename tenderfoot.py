@@ -7,7 +7,7 @@ class Tenderfoot():
 		self.INF 	= 1000000
 		self.depth 	= 3
 		self.ply 	= {}
-		self.block_weights = [[6, 4, 4, 6], [4, 3, 3, 4], [4, 3, 3, 4], [6, 4, 4, 6]]
+		self.normal_weights = [1, 9, 90, 900, 9000]
 		self.winning_comb = []
 		self.tlimit = 14
 		for i in range(4):
@@ -203,39 +203,14 @@ class Tenderfoot():
 		return prob
 
 	def normalize(self, p_gain, gain):
-
-		if p_gain < 1 and p_gain >= -1:
-			gain += p_gain
-		if p_gain >= 3 and p_gain < 4:
-			val = 100
-			val += (p_gain - 3) * 900
-			gain += val
-		if p_gain >= -2 and p_gain < -1:
-			val = -1
-			val -= (abs(p_gain) - 1) * 9
-			gain += val
-		if p_gain < -3 and p_gain >= -4:
-			val = -100
-			val -= (abs(p_gain) - 3) * 900
-			gain += val
-		if p_gain >= 1 and p_gain < 2:
-			val = 1
-			val += (p_gain - 1) * 9
-			gain += val
-		if p_gain >= 4:
-			val = 1000
-			val += (p_gain - 4) * 9000
-			gain += val
-		if p_gain >= 2 and p_gain < 3:
-			val = 10
-			val += (p_gain - 2) * 90
-			gain += val
-		if p_gain < -4:
-			val = -1000
-			val -= (abs(p_gain) - 4) * 9000
-			gain += val
-		if p_gain >= -3 and p_gain < -2:
-			val = -10
-			val -= (abs(p_gain) - 2) * 90
-			gain += val
+		sign = 1
+		p_abs = abs(p_gain)
+		idx = int(p_abs)
+		if idx > 4:
+			idx = 4
+		if p_gain < 0:
+			sign = -1
+		frac_part = p_abs - idx
+		weight = self.normal_weights[idx]
+		gain += sign * (weight * frac_part + int(weight / 9))
 		return gain
