@@ -51,7 +51,7 @@ class Tenderfoot():
 		max_move = (-1, -1)
 
 		while time.time() - self.stime < self.tlimit:
-			score,move,valid = self.minimax(board, self.depth, -self.INF, self.INF, old_move, True)
+			score,move,valid = self.minimax(board, self.depth, -self.INF, self.INF, old_move, True, False)
 			print('valid --> ', valid, 'depth --> ',self.depth, 'time--> ',time.time() - self.stime)
 			if valid == 1:
 				max_move = move
@@ -63,7 +63,7 @@ class Tenderfoot():
 		return max_move
 
 
-	def minimax(self, board, depth, alpha, beta, old_move, is_max_ply):
+	def minimax(self, board, depth, alpha, beta, old_move, is_max_ply, is_pre_bonus):
 
 		terminal_status = board.find_terminal_state()
 		if depth == 0 or terminal_status != ('CONTINUE', '-'):
@@ -82,12 +82,13 @@ class Tenderfoot():
 				board.update(old_move, mv, self.ply["max"])
 				
 				flag = False
+				bonus = False
 				if board.block_status[mv[0]/4][mv[1]/4] == self.ply["max"]:
-					won = sum(blocks.count(self.ply["max"]) for blocks in board.block_status)
-					if won <= 2:
+					if is_pre_bonus == False:
 						flag = True
+						bonus = True
 
-				tupl = self.minimax(board, depth-1, alpha, beta, mv, flag)
+				tupl = self.minimax(board, depth-1, alpha, beta, mv, flag, bonus)
 
 				board.block_status[mv[0]/4][mv[1]/4]= '-'
 				board.board_status[mv[0]][mv[1]] 	= '-'
@@ -117,12 +118,13 @@ class Tenderfoot():
 				board.update(old_move, mv, self.ply["min"])
 
 				flag = True
+				bonus = False
 				if board.block_status[mv[0]/4][mv[1]/4] == self.ply["min"]:
-					won = sum(blocks.count(self.ply["min"]) for blocks in board.block_status)
-					if won <= 2:
+					if is_pre_bonus == False:
 						flag = False
+						bonus = True
 
-				tupl = self.minimax(board,depth-1,alpha,beta,mv,flag)
+				tupl = self.minimax(board,depth-1,alpha,beta,mv,flag,bonus)
 
 				board.block_status[mv[0]/4][mv[1]/4]= '-'
 				board.board_status[mv[0]][mv[1]] 	= '-'
